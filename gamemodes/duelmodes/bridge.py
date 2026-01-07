@@ -1,5 +1,5 @@
 import discord, requests, datetime
-from ...util import get_bridge_prestige, wins_to_bridge_prestige
+from ...util import get_prestige_halved, wins_to_prestige_halved
 from ...tracking.databases import getJSON
 from dataclasses import dataclass
 from typing import Union
@@ -82,8 +82,8 @@ class BridgeStats():
       highestWinstreak = player_stats.get("best_bridge_winstreak", "This player has their winstreak hidden")
       winstreak = player_stats.get("current_bridge_winstreak", "This player has their winstreak hidden")
 
-      prestige = get_bridge_prestige(wins)
-      next_prestige, wins_needed = wins_to_bridge_prestige(wins)
+      prestige = get_prestige_halved(wins)
+      next_prestige, wins_needed = wins_to_prestige_halved(wins)
 
       return cls(
         username=username,
@@ -113,8 +113,8 @@ class BridgeStats():
       blocksPlaced = self.blocksPlaced + other.blocksPlaced
       gamesPlayed = wins + losses
 
-      prestige = get_bridge_prestige(wins)
-      next_prestige, wins_needed = wins_to_bridge_prestige(wins)
+      prestige = get_prestige_halved(wins)
+      next_prestige, wins_needed = wins_to_prestige_halved(wins)
 
       return BridgeStats(
           username=self.username,
@@ -141,8 +141,8 @@ class BridgeStats():
     blocksPlaced = self.blocksPlaced - other.blocksPlaced
     gamesPlayed = wins + losses
 
-    prestige = get_bridge_prestige(self.wins)
-    next_prestige, wins_needed = wins_to_bridge_prestige(max(self.wins, other.wins))
+    prestige = get_prestige_halved(self.wins)
+    next_prestige, wins_needed = wins_to_prestige_halved(max(self.wins, other.wins))
   
     return BridgeStats(
         username=self.username,

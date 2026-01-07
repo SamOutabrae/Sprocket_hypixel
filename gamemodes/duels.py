@@ -26,8 +26,11 @@ class Duels(commands.Cog):
 
     if uuid is None:
       await ctx.respond(f"Please ensure {username} is a proper username.")
-
-    duelmode = duelmode.lower()
+      return
+    
+    if duelmode is None:
+      await ctx.respond("You must provide a duelmode.")
+      return
 
     if CONFIG.TRACKING_ENABLED:
       if start is not None:
@@ -43,10 +46,9 @@ class Duels(commands.Cog):
       start = None
       end = None
 
-
-    # TODO make this nicer
+    duelmode = duelmode.lower()
     if duelmode not in duelmodes:
-      await ctx.respond(f"No duelmode {duelmode}. Please ensure you enter a proper duelmode. Options are {' '.join(duelmodes.keys())}")
+      await ctx.respond(f"No duelmode {duelmode}. Please ensure you enter a proper duelmode.")
 
     embed = None
     try:

@@ -110,27 +110,28 @@ def map_account(user: discord.User, uuid):
 
 # TODO write unmap account
 
-# TODO implement fix if someone is highest possible prestige
-# TODO unify these into one function which takes mode as an argument 
 def wins_to_prestige(wins):
-  """Returns a tuple of prestige and the number of wins needed to reach it."""
+  """Returns a tuple of prestige and the number of wins needed to reach it. For some modes, required wins have been halved and wins_to_prestige_havled should be used instead/"""
   for wins_needed, prestige in prestiges:
     wins_needed = wins_needed
 
     if wins_needed > wins:
       return (prestige, wins_needed-wins)
+  
+  return ("MAX PRESTIGE", 0)
 
-def wins_to_bridge_prestige(wins):
-  """Returns a tuple of prestige and the number of wins needed to reach it."""
+def wins_to_prestige_halved(wins):
+  """Returns a tuple of prestige and the number of wins needed to reach it where required wins have been halved (e.g. bridge, parkour)."""
   for prestige, wins_needed in prestiges:
     wins_needed = int(wins_needed/2)
 
     if wins_needed > wins:
       return (prestige, wins_needed-wins)
+  
+  return ("MAX PRESTIGE", 0)
     
-# TODO handle what happens if someone goes beyond Ascended
 def get_prestige(wins):
-  """Returns the prestige of a player based on their wins."""
+  """Returns the prestige of a player based on their wins. For some modes, required wins have been halved and get_prestige_halved should be used instead."""
   last = "N/A"
 
   for prestige, wins_needed in prestiges:
@@ -141,7 +142,8 @@ def get_prestige(wins):
 
   return last
 
-def get_bridge_prestige(wins):
+def get_prestige_halved(wins):
+  """For duelmodes where required wins have been halved (e.g. bridge, parkour)"""
   last = "N/A"
   for prestige, wins_needed in prestiges:
     if wins < int(wins_needed/2):
