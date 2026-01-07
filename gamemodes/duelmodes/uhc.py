@@ -1,6 +1,6 @@
 import discord, requests, datetime
 
-from ...util import getPrestige, winsToPrestige
+from ...util import get_prestige, wins_to_prestige
 
 from dataclasses import dataclass
 
@@ -40,8 +40,8 @@ class UHCStats():
       return cls(
         username          = username,
         wins              = wins,
-        prestige          = getPrestige(wins),
-        next_prestige     = winsToPrestige(wins),
+        prestige          = get_prestige(wins),
+        next_prestige     = wins_to_prestige(wins),
         losses            = stats.get("uhc_duel_losses", 0),
         kills             = stats.get("uhc_duel_kills", 0),
         deaths            = stats.get("uhc_duel_deaths", 0),
@@ -75,8 +75,8 @@ class UHCStats():
       winstreak         = self.winstreak,
       highestWinstreak  = self.highestWinstreak,
       wins              = wins,
-      prestige          = getPrestige(self.wins),
-      next_prestige     = winsToPrestige(self.wins),
+      prestige          = get_prestige(self.wins),
+      next_prestige     = wins_to_prestige(self.wins),
       losses            = losses,
       kills             = kills,
       deaths            = deaths,

@@ -6,6 +6,7 @@ from ..config import CONFIG, both_in, guild_in
 from typing import Optional
 
 from dateutil import parser
+from datetime import datetime
 
 
 from .duelmodes.bridge import getBridgeStatsEmbed
@@ -20,22 +21,19 @@ class Duels(commands.Cog):
   def __init__(self):
     pass
 
-  @bridge.bridge_command(name="duels", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
-  @util.selfArgument
-  async def duels(self, ctx, duelmode: bridge.BridgeOption(str, choices=["bridge", "uhc"]), 
-                  start: bridge.BridgeOption(str, description="The start date for a range. You can also leave end_blank to just get stats for this day.")=None, 
-                  end: bridge.BridgeOption(str, description="The end date for a range. Can be left blank even if start_date is given.")=None, 
-                  username: bridge.BridgeOption(str, description="The username of the person you want to see stats for.")=None):
+  async def _duels_stats(self, ctx, duelmode, start, end, username):
     uuid = util.getUUID(username)
 
     if uuid is None:
-      await ctx.respoond(f"Please ensure {username} is a proper username.")
+      await ctx.respond(f"Please ensure {username} is a proper username.")
 
     duelmode = duelmode.lower()
 
     if CONFIG.TRACKING_ENABLED:
       if start is not None:
-        start = parser.parse(start)
+        today_synonyms = ["today", "t"]
+        start = datetime.today() if start in today_synonyms else parser.parse(start)
+      
       if end is not None:
         end = parser.parse(end)
     else:
@@ -62,3 +60,19 @@ class Duels(commands.Cog):
       return
 
     await ctx.respond(embed=embed)
+
+  @bridge.bridge_command(name="today_duels", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
+  @util.selfArgument
+  async def today_duels(self,
+                        ctx, 
+                        duelmode: bridge.BridgeOption(str, choices=["bridge", "uhc"])=None, 
+                        username: bridge.BridgeOption(str, description="The username of the person you want to see stats for.")=None):
+    await self._duels_stats(ctx, duelmode, "t", None, username)
+
+  @bridge.bridge_command(name="duels", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
+  @util.selfArgument
+  async def duels(self, ctx, duelmode: bridge.BridgeOption(str, choices=["bridge", "uhc"]), 
+                  start: bridge.BridgeOption(str, description="The start date for a range. If you just want stats for today you can also just put t.")=None, 
+                  end: bridge.BridgeOption(str, description="The end date for a range. Can be left blank.")=None, 
+                  username: bridge.BridgeOption(str, description="The username of the person you want to see stats for.")=None):
+    await self._duels_stats(ctx, duelmode, start, end, username)

@@ -110,120 +110,98 @@ def map_account(user: discord.User, uuid):
 
 # TODO write unmap account
 
-prestiges = [
-        ("Rookie", 50),
-        ("Rookie 2", 60),
-        ("Rookie 3", 70),
-        ("Rookie 4", 80),
-        ("Rookie 5", 90),
-        ("Iron", 100),
-        ("Iron 2", 130),
-        ("Iron 3", 160),
-        ("Iron 4", 190),
-        ("Iron 5", 220),
-        ("Gold", 250),
-        ("Gold 2", 300),
-        ("Gold 3", 350),
-        ("Gold 4", 400),
-        ("Gold 5", 450),
-        ("Diamond", 500),
-        ("Diamond 2", 600),
-        ("Diamond 3", 700),
-        ("Diamond 4", 800),
-        ("Diamond 5", 900),
-        ("Master", 1000),
-        ("Master 2", 1200),
-        ("Master 3", 1400),
-        ("Master 4", 1600),
-        ("Master 5", 1800),
-        ("Legend", 2000),
-        ("Legend 2", 2600),
-        ("Legend 3", 3200),
-        ("Legend 4", 3800),
-        ("Legend 5", 4400),
-        ("Grandmaster", 5000),
-        ("Grandmaster 2", 6000),
-        ("Grandmaster 3", 7000),
-        ("Grandmaster 4", 8000),
-        ("Grandmaster 5", 9000),
-        ("Godlike", 10000),
-        ("Godlike 2", 12000),
-        ("Godlike 3", 14000),
-        ("Godlike 4", 16000),
-        ("Godlike 5", 18000),
-        ("Godlike 6", 20000),
-        ("Godlike 7", 22000),
-        ("Godlike 8", 24000),
-        ("Godlike 9", 26000),
-        ("Godlike 10", 28000)
-    ]
-
-def winsToPrestige(wins):
+# TODO implement fix if someone is highest possible prestige
+# TODO unify these into one function which takes mode as an argument 
+def wins_to_prestige(wins):
   """Returns a tuple of prestige and the number of wins needed to reach it."""
-  for idx, prestige in enumerate(prestiges):
-    winsNeeded = prestige[1]
-    prestige = prestige[0]
+  for wins_needed, prestige in prestiges:
+    wins_needed = wins_needed
 
-    if winsNeeded > wins:
-      return (prestige, winsNeeded-wins)
+    if wins_needed > wins:
+      return (prestige, wins_needed-wins)
 
-def getPrestige(wins):
+def wins_to_bridge_prestige(wins):
+  """Returns a tuple of prestige and the number of wins needed to reach it."""
+  for prestige, wins_needed in prestiges:
+    wins_needed = int(wins_needed/2)
+
+    if wins_needed > wins:
+      return (prestige, wins_needed-wins)
+    
+# TODO handle what happens if someone goes beyond Ascended
+def get_prestige(wins):
   """Returns the prestige of a player based on their wins."""
   last = "N/A"
 
-  for prestige, winsNeeded in prestiges:
-    if wins < winsNeeded:
+  for prestige, wins_needed in prestiges:
+    if wins < wins_needed:
       break
 
     last = prestige
 
   return last
 
+def get_bridge_prestige(wins):
+  last = "N/A"
+  for prestige, wins_needed in prestiges:
+    if wins < int(wins_needed/2):
+      break
+
+    last = prestige
+  
+  return last
+
 
 prestiges = [
         ("Rookie", 50),
-        ("Rookie 2", 60),
-        ("Rookie 3", 70),
-        ("Rookie 4", 80),
-        ("Rookie 5", 90),
+        ("Rookie II", 60),
+        ("Rookie III", 70),
+        ("Rookie IV", 80),
+        ("Rookie V", 90),
         ("Iron", 100),
-        ("Iron 2", 130),
-        ("Iron 3", 160),
-        ("Iron 4", 190),
-        ("Iron 5", 220),
+        ("Iron II", 130),
+        ("Iron III", 160),
+        ("Iron IV", 190),
+        ("Iron V", 220),
         ("Gold", 250),
-        ("Gold 2", 300),
-        ("Gold 3", 350),
-        ("Gold 4", 400),
-        ("Gold 5", 450),
+        ("Gold II", 300),
+        ("Gold III", 350),
+        ("Gold IV", 400),
+        ("Gold V", 450),
         ("Diamond", 500),
-        ("Diamond 2", 600),
-        ("Diamond 3", 700),
-        ("Diamond 4", 800),
-        ("Diamond 5", 900),
+        ("Diamond II", 600),
+        ("Diamond III", 700),
+        ("Diamond IV", 800),
+        ("Diamond V", 900),
         ("Master", 1000),
-        ("Master 2", 1200),
-        ("Master 3", 1400),
-        ("Master 4", 1600),
-        ("Master 5", 1800),
+        ("Master II", 1200),
+        ("Master III", 1400),
+        ("Master IV", 1600),
+        ("Master V", 1800),
         ("Legend", 2000),
-        ("Legend 2", 2600),
-        ("Legend 3", 3200),
-        ("Legend 4", 3800),
-        ("Legend 5", 4400),
+        ("Legend II", 2600),
+        ("Legend III", 3200),
+        ("Legend IV", 3800),
+        ("Legend V", 4400),
         ("Grandmaster", 5000),
-        ("Grandmaster 2", 6000),
-        ("Grandmaster 3", 7000),
-        ("Grandmaster 4", 8000),
-        ("Grandmaster 5", 9000),
+        ("Grandmaster II", 6000),
+        ("Grandmaster III", 7000),
+        ("Grandmaster IV", 8000),
+        ("Grandmaster V", 9000),
         ("Godlike", 10000),
-        ("Godlike 2", 12000),
-        ("Godlike 3", 14000),
-        ("Godlike 4", 16000),
-        ("Godlike 5", 18000),
-        ("Godlike 6", 20000),
-        ("Godlike 7", 22000),
-        ("Godlike 8", 24000),
-        ("Godlike 9", 26000),
-        ("Godlike 10", 28000)
+        ("Godlike II", 12000),
+        ("Godlike III", 14000),
+        ("Godlike IV", 16000),
+        ("Godlike V", 18000),
+        ("Celestial", 25000),
+        ("Celestial II", 30000),
+        ("Celestial III", 35000),
+        ("Celestial IV", 40000),
+        ("Celestial V", 45000),
+        ("Divine", 50000),
+        ("Divine II", 60000),
+        ("Divine III", 70000),
+        ("Divine IV", 80000),
+        ("Divine V", 90000),
+        ("Ascended", 100000),
     ]
