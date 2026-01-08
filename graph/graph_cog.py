@@ -12,7 +12,7 @@ class Graph(commands.Cog):
     pass
 
 
-  @commands.slash_command(name = "graph-bw")
+  @commands.slash_command(name = "graph-bw", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
   @util.self_argument
   @util.tracking_required
   async def graph_bw_command(self, ctx, 
@@ -28,7 +28,7 @@ class Graph(commands.Cog):
     
     await graphing.graph_bw(ctx, username, x_axis, y_axis)
   
-  @commands.slash_command(name = "graph-duels")
+  @commands.slash_command(name = "graph-duels", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
   @util.self_argument
   @util.tracking_required
   async def graph_duels(self, ctx,
