@@ -25,6 +25,9 @@ def process_df(df: pd.DataFrame, days: int=0, n: int=0, since_start: bool=True) 
 
     if df.empty:
         return df
+    
+    if n <= 0 and days <= 0:
+      return df
 
     if since_start:
         # Identify columns that should NOT be zeroed
