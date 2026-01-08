@@ -12,19 +12,14 @@ class Graph(commands.Cog):
     pass
 
 
-  # TODO these options don't seem to actually be optional, fix that
   @commands.slash_command(name = "graph-bw")
   @util.self_argument
   @util.tracking_required
   async def graph_bw_command(self, ctx, 
-                             username: discord.Option(str, description="The username of the player you're trying to see stats for"),
-                             x_axis: discord.Option(str, description="The desired x-axis variable."),
-                             y_axis: discord.Option(str, description="The desired y-axis variable")):
-    # TODO make this code actually work
-    """ if x_axis not in graphing.bw_variables or y_axis not in graphing.bw_variables:
-      await ctx.respond(f"Both x_axis and y_axis must be valid and not None. Valid variables for graphing include [{", ".join(graphing.bw_variables.keys())}].")
-      return """
-
+                             y_axis: discord.Option(str, description="The desired y-axis variable."),
+                             x_axis: discord.Option(str, default="Games", description="The desired x-axis variable. Defaults to games if left blank"),
+                             username: discord.Option(str, required=False, description="The username of the player you're trying to see stats for.")):
+    await ctx.defer()
     username = util.getUUID(username)
 
     if username is None:
