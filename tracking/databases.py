@@ -5,6 +5,9 @@ import pandas as pd
 from ..config import CONFIG
 from .. import util
 
+"""Player UUIDs are keys. Values are another dict which has
+keys representing the different gamemodes
+e.g. databases[uuid]['bedwars'] will give the bedwars database for the player uuid"""
 databases = {}
 
 
@@ -53,48 +56,97 @@ def getJSON(date: datetime.datetime, uuid=None, username=None):
     with open(filepath, "r") as f:
         return json.load(f)
 
-def normalizeJSON(json):
-  kills = json["player"]["stats"]["Bedwars"]["kills_bedwars"]
-  deaths = json["player"]["stats"]["Bedwars"]["deaths_bedwars"]
-  voidDeaths = json["player"]["stats"]["Bedwars"]["void_deaths_bedwars"]
-  finalDeaths = json["player"]["stats"]["Bedwars"]["final_deaths_bedwars"]
-  finalKills = json["player"]["stats"]["Bedwars"]["final_kills_bedwars"]
-  bedwarsLevel = json["player"]["achievements"]["bedwars_level"]
-  bedsBroken = json["player"]["stats"]["Bedwars"]["beds_broken_bedwars"]
-  displayname = json["player"]["displayname"]
-  gamesplayed = json["player"]["stats"]["Bedwars"]["games_played_bedwars"]
-  wins = json["player"]["stats"]["Bedwars"]["wins_bedwars"]
-  losses = json["player"]["stats"]["Bedwars"]["losses_bedwars"]
-  #winstreak = json["player"]["stats"]["Bedwars"]["winstreak"]
-  kdr = kills / deaths
-  finalkdr = finalKills / finalDeaths
-  
-  return {
-    "Date": json["date"],
-    "Kills": kills,
-    "Deaths": deaths,
-    "Void Deaths": voidDeaths,
-    "Final Deaths": finalDeaths,
-    "Final Kills": finalKills,
-    "Beds Broken": bedsBroken,
-    "Bedwars Level": bedwarsLevel,
-    "Games Played": gamesplayed,
-    "Wins": wins,
-    "Losses": losses,
-    #"Win Streak": winstreak,
-    "K/D Ratio": kdr,
-    "Final K/D Ratio": finalkdr
-  }
+# Helper to make adding new modes easier
+def sum_stats(stats_dict, prefixes, suffix):
+  total = 0
+  for p in prefixes:
+      key = f"{p}_{suffix}"
+      val = stats_dict.get(key, 0)
+      # Handle cases where the key exists but the value is None
+      total += (val if val is not None else 0)
+  return total
 
-def rebuild_database_worker(player, PATH):
-  path = PATH + "/data/"
+# TODO more elegant solution?
+def normalizeJSON(datatype, json):
+  if datatype == "bedwars":
+    kills = json["player"]["stats"]["Bedwars"]["kills_bedwars"]
+    deaths = json["player"]["stats"]["Bedwars"]["deaths_bedwars"]
+    voidDeaths = json["player"]["stats"]["Bedwars"]["void_deaths_bedwars"]
+    finalDeaths = json["player"]["stats"]["Bedwars"]["final_deaths_bedwars"]
+    finalKills = json["player"]["stats"]["Bedwars"]["final_kills_bedwars"]
+    bedwarsLevel = json["player"]["achievements"]["bedwars_level"]
+    bedsBroken = json["player"]["stats"]["Bedwars"]["beds_broken_bedwars"]
+    gamesplayed = json["player"]["stats"]["Bedwars"]["games_played_bedwars"]
+    wins = json["player"]["stats"]["Bedwars"]["wins_bedwars"]
+    losses = json["player"]["stats"]["Bedwars"]["losses_bedwars"]
+    kdr = kills / deaths
+    finalkdr = finalKills / finalDeaths
+    
+    return {
+      "Date": json["date"],
+      "Kills": kills,
+      "Deaths": deaths,
+      "Void Deaths": voidDeaths,
+      "Final Deaths": finalDeaths,
+      "Final Kills": finalKills,
+      "Beds Broken": bedsBroken,
+      "Bedwars Level": bedwarsLevel,
+      "Games Played": gamesplayed,
+      "Wins": wins,
+      "Losses": losses,
+      #"Win Streak": winstreak,
+      "K/D Ratio": kdr,
+      "Final K/D Ratio": finalkdr
+    }
+  
+  elif datatype == "bridge":
+    player_stats = json["player"]["stats"]["Duels"]
+    username = json["player"]["displayname"]
+
+    modes = ["bridge_duel", "bridge_doubles", "bridge_threes", "bridge_four", "bridge_3v3v3v3"]
+
+    wins          = sum_stats(player_stats, modes, "wins")
+    losses        = sum_stats(player_stats, modes, "losses")
+    goals         = sum_stats(player_stats, modes, "goals")
+    kills         = sum_stats(player_stats, modes, "bridge_kills")
+    deaths        = sum_stats(player_stats, modes, "bridge_deaths")
+    blocks_placed = sum_stats(player_stats, modes, "blocks_placed")
+
+    games_played = wins + losses
+
+    # TODO handle this better
+    highest_winstreak = player_stats.get("best_bridge_winstreak", -1)
+    winstreak = player_stats.get("current_bridge_winstreak", -1)
+
+
+    return {
+      'Date'             : json["date"],
+      'Wins'             : wins,
+      'Losses'           : losses,
+      'Kills'            : kills,
+      'Deaths'           : deaths,
+      'Games Played'     : games_played,
+      'Goals'            : goals,
+      'Blocks Placed'    : blocks_placed,
+      'Highest Winstreak': highest_winstreak,
+      'Winstreak'        : winstreak,
+    }
+
+
+def rebuild_database_worker(player):
+  path = CONFIG.PATH + "/data/"
 
   PLAYERPATH = f"{path}/trackedplayers/{player}"
-  json_files = [f.replace(".json", "") for f in os.listdir(PLAYERPATH) if f.endswith(".json")]
-  json_files.sort(key=lambda x : datetime.strptime(x, "%d-%m-%y"))
+  json_list = os.listdir(PLAYERPATH)
+  json_list.remove("mapping.json")
+  json_files = [f.replace(".json", "") for f in json_list if f.endswith(".json")]
+  json_files.sort(key=lambda x : datetime.datetime.strptime(x, "%d-%m-%y"))
   json_files = [f + ".json" for f in json_files]
 
-  data = []
+  data = {
+     'bedwars': [],
+     'bridge': []
+  }
   failed = 0
   for filename in json_files:
     with open(os.path.join(PLAYERPATH, filename), "r") as file:
@@ -105,13 +157,15 @@ def rebuild_database_worker(player, PATH):
         failed += 1
         continue
       
-      df = normalizeJSON(json_data)
-      data.append(df)
-  
-  df = pd.DataFrame(data)
+      for gamemode in data:
+        dat = normalizeJSON(gamemode, json_data)
+        data[gamemode].append(dat)
 
-  df.to_hdf(PATH + f"/data/databases/{player}/data.h5", key=player)
-  return pd.DataFrame(data)
+  for gamemode in data:
+    data[gamemode] = pd.DataFrame(data[gamemode])
+    # add _p{uuid} so it doesn't complain about invalid identifiers
+    data[gamemode].to_hdf(CONFIG.PATH + f"/data/databases/{player}/{gamemode}.h5", key=f"p_{player}")
+  return data
 
 
 async def rebuild_db(player):
@@ -152,31 +206,38 @@ async def initialize_dbs(directory):
   now = datetime.datetime.now().strftime('%d-%m-%y')
 
   for player in players:
+    databases[player] = {}
+
     player_dir = PATH + f"/databases/{player}"
-    datapath = f"{player_dir}/data.h5"
 
     if not os.path.exists(player_dir):
       os.mkdir(player_dir)
 
-    if not os.path.isfile(datapath):
-      asyncio.create_task(rebuild_db(player))
-      continue
+    datatypes = {
+       'bedwars': 'bedwars.h5',
+       'bridge':  'bridge.h5'
+    }
+    for datatype, datapath in datatypes.items():
+      datapath = f"{player_dir}/{datapath}"
+      if not os.path.isfile(datapath):
+        asyncio.create_task(rebuild_db(player))
+        break
 
-    df = pd.read_hdf(datapath)
+      df = pd.read_hdf(datapath)
 
-    if df["Date"].iloc[-1] != now:
-      json_path = f"{player_dir}/{now}.json"
+      if df["Date"].iloc[-1] != now:
+        json_path = f"{player_dir}/{now}.json"
 
-      if os.path.isfile(json_path):
-        with open(json_path, "r") as file:
-          json_data = json.load(file)
-          json_data["date"] = json_path.removesuffix(".json")
+        if os.path.isfile(json_path):
+          with open(json_path, "r") as file:
+            json_data = json.load(file)
+            json_data["date"] = json_path.removesuffix(".json")
 
-          if json_data.get("success") is True:
-            dat = dat.normalizeJSON(json_data)
-            df = pd.concat([df, dat], ignore_index=True)
+            if json_data.get("success") is True:
+              dat = dat.normalizeJSON(datatype, json_data)
+              df = pd.concat([df, dat], ignore_index=True)
 
-            df.to_hdf(datapath)
+              df.to_hdf(datapath)
 
-    databases[player] = df
+      databases[player][datatype] = df
     logging.info(f"Loaded database for {player}")

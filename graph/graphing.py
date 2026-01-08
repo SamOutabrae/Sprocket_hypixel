@@ -50,7 +50,7 @@ def bad_bw_labels_embed() -> discord.Embed:
   return embed
 
 async def graph_bw(ctx: Context, uuid: str, x_label: str, y_label):
-  df: pd.DataFrame = databases.databases[uuid]
+  df: pd.DataFrame = databases.databases[uuid]["bedwars"]
 
   df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y")
   df = df.sort_values("Date")
