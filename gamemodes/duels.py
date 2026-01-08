@@ -9,12 +9,12 @@ from dateutil import parser
 from datetime import datetime
 
 
-from .duelmodes.bridge import getBridgeStatsEmbed
-from .duelmodes.uhc import getUHCStatsEmbed
+from .duelmodes.bridge import get_bridge_stats_embed
+from .duelmodes.uhc import get_UHC_stats_embed
 
 duelmodes = {
-  "bridge": getBridgeStatsEmbed,
-  "uhc": getUHCStatsEmbed
+  "bridge": get_bridge_stats_embed,
+  "uhc": get_UHC_stats_embed
 }
 
 class Duels(commands.Cog):
@@ -64,7 +64,7 @@ class Duels(commands.Cog):
     await ctx.respond(embed=embed)
 
   @bridge.bridge_command(name="today_duels", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
-  @util.selfArgument
+  @util.self_argument
   async def today_duels(self,
                         ctx, 
                         duelmode: bridge.BridgeOption(str, choices=["bridge", "uhc"])=None, 
@@ -72,7 +72,7 @@ class Duels(commands.Cog):
     await self._duels_stats(ctx, duelmode, "t", None, username)
 
   @bridge.bridge_command(name="duels", integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
-  @util.selfArgument
+  @util.self_argument
   async def duels(self, ctx, duelmode: bridge.BridgeOption(str, choices=["bridge", "uhc"]), 
                   start: bridge.BridgeOption(str, description="The start date for a range. If you just want stats for today you can also just put t.")=None, 
                   end: bridge.BridgeOption(str, description="The end date for a range. Can be left blank.")=None, 

@@ -10,7 +10,7 @@ from ..tracking import tracking, databases
 
 from typing import Optional
 
-def parseFromJSON(json):
+def parse_from_json(json):
   """Creates a BedwarsStats object from a JSON response from the Hypixel API."""
 
   winstreak = "N/A"
@@ -64,7 +64,7 @@ class BedwarsStats():
       logging.debug(f"Making web request to {url}")
       response = requests.get(url)
 
-      return parseFromJSON(response.json())
+      return parse_from_json(response.json())
     except Exception as e:
       logging.error(f"Error while making request to {url}. Response code: {response.status_code}.")
       raise e
@@ -102,7 +102,7 @@ class BedwarsStats():
 
     return BedwarsStats(self.winstreak, killsfinal, deathsfinal, voidDeathsfinal, finalDeathsfinal, finalKillsfinal, bedwarsLevelfinal, gamesplayedfinal, winsfinal, lossesfinal, kdrfinal, self.displayname)
 
-  def toEmbedDict(self):
+  def to_embed_dict(self):
     winloss = 0
     if self.losses + self.wins != 0:
       winloss = self.wins/(self.wins + self.losses)
@@ -124,21 +124,21 @@ class BedwarsStats():
 
     return embed_dict
   
-  def toEmbed(self, embed=None):
+  def to_embed(self, embed=None):
     if embed is None:
       embed = discord.Embed(title = self.displayname, description = "Bedwars stats for " + self.displayname, color=0x00ff00 )
 
-    d = self.toEmbedDict()
+    d = self.to_embed_dict()
     for key in d.keys():
       value = d[key]
       embed.add_field(name = key, value = value, inline = False)
     return embed
   
-  def toDateEmbed(self, date: datetime.datetime, embed: discord.Embed = None):
+  def to_date_embed(self, date: datetime.datetime, embed: discord.Embed = None):
     if embed is None:
       embed = discord.Embed(title = self.displayname, description = f"Bedwars progress for {self.displayname} on {date.strftime('%m/%d/%y')}")
 
-    d = self.toEmbedDict()
+    d = self.to_embed_dict()
     for key in d.keys():
       value = d[key]
       embed.add_field(name = key, value = value, inline = False)
@@ -152,7 +152,7 @@ class Bedwars(commands.Cog):
     
 
   @bridge.bridge_command(name="bw", aliases=["bedwars", "bwstats", "statsBW"], integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
-  @util.selfArgument
+  @util.self_argument
   async def bw(self, ctx, username: bridge.BridgeOption(str, description="The username of the player you want to see stats for.") = None, date: bridge.BridgeOption(str, description="Get stats for a specific date. Requires tracking.") = None):
     if username is None:
       await ctx.respond("Please provide a username or UUID.")
@@ -166,23 +166,23 @@ class Bedwars(commands.Cog):
 
       date = parser.parse(date)
 
-      stats_day = parseFromJSON(databases.getJSON(date, uuid=uuid))
-      stats_yesterday = parseFromJSON(databases.getJSON(date - datetime.timedelta(days=1), uuid=uuid))
+      stats_day = parse_from_json(databases.getJSON(date, uuid=uuid))
+      stats_yesterday = parse_from_json(databases.getJSON(date - datetime.timedelta(days=1), uuid=uuid))
       stats = stats_day - stats_yesterday
 
-      await ctx.respond(embed=stats.toDateEmbed(date))
+      await ctx.respond(embed=stats.to_date_embed(date))
       return
 
 
     try:
-      await ctx.respond(embed = BedwarsStats.get(CONFIG.KEY, uuid=uuid).toEmbed())
+      await ctx.respond(embed = BedwarsStats.get(CONFIG.KEY, uuid=uuid).to_embed())
     except Exception as e:
       await ctx.respond(f"Error while getting stats. Are you sure `{username}` is correct?")
 
   # TRACKING COMMANDS
   @bridge.bridge_command(name="today_bw", aliases=["todayBW"], integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
-  @util.trackingRequired
-  @util.selfArgument
+  @util.tracking_required
+  @util.self_argument
   async def today_bw(self, ctx, username: bridge.BridgeOption(str, description="The username of the player who's stats you want to see.") = None):
     #checks
     if username is None:
@@ -193,7 +193,7 @@ class Bedwars(commands.Cog):
     if uuid is None:
       return
 
-    if not tracking.trackContains(CONFIG.PATH, uuid):
+    if not tracking.track_contains(CONFIG.PATH, uuid):
       await ctx.respond(f"The player {username} is not being tracked.")
       return
     #checks
@@ -204,7 +204,7 @@ class Bedwars(commands.Cog):
     d_yesterday = datetime.datetime.now()
 
     today = BedwarsStats.get(key=CONFIG.KEY, uuid=uuid)
-    yesterday = parseFromJSON(databases.getJSON(d_yesterday, uuid=uuid))
+    yesterday = parse_from_json(databases.getJSON(d_yesterday, uuid=uuid))
 
     if yesterday is None:
       await ctx.respond(f"No tracking data for {username} yesterday.")
@@ -212,13 +212,13 @@ class Bedwars(commands.Cog):
     data = today-yesterday
 
     embed = discord.Embed(title = data.displayname, description = f"{data.displayname}'s stats so far today.", color = 0x3498DB)
-    embed = data.toEmbed(embed=embed)
+    embed = data.to_embed(embed=embed)
 
     await ctx.respond(embed = embed)
 
   @bridge.bridge_command(name="yesterday_bw", aliases=["yesterdayBW"], integration_types = both_in if CONFIG.ALLOW_USER_INSTALLS else guild_in)
-  @util.trackingRequired
-  @util.selfArgument
+  @util.tracking_required
+  @util.self_argument
   async def yesterday_bw(self, ctx, username: bridge.BridgeOption(str, description="The username of the player who's stats you want to see.") = None): # type: ignore
     #checks
     if username is None:
@@ -229,7 +229,7 @@ class Bedwars(commands.Cog):
     if uuid is None:
       return
 
-    if not tracking.trackContains(CONFIG.PATH, uuid):
+    if not tracking.track_contains(CONFIG.PATH, uuid):
       await ctx.respond(f"The player {username} is not being tracked.")
       return
     #checks
@@ -239,8 +239,8 @@ class Bedwars(commands.Cog):
     d_yesterday = datetime.datetime.now()
     d_daybefore = datetime.datetime.now() - datetime.timedelta(days=1)
 
-    yesterday = parseFromJSON(databases.getJSON(d_yesterday, uuid=uuid))
-    daybefore = parseFromJSON(databases.getJSON(d_daybefore, uuid=uuid))
+    yesterday = parse_from_json(databases.getJSON(d_yesterday, uuid=uuid))
+    daybefore = parse_from_json(databases.getJSON(d_daybefore, uuid=uuid))
 
     if yesterday is None or daybefore is None:
       await ctx.respond(f"Unable to get data. Ensure the player has been tracked for at least 2 days.")
@@ -250,6 +250,6 @@ class Bedwars(commands.Cog):
     date_formatted = d_yesterday.strftime("%m/%d/%y")
 
     embed = discord.Embed(title=data.displayname, description=f"{data.displayname}'s bedwars stats on {date_formatted}", color=0x206694)
-    embed = data.toEmbed(embed=embed)
+    embed = data.to_embed(embed=embed)
 
     await ctx.respond(embed = embed)

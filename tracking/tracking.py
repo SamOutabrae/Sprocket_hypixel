@@ -1,4 +1,4 @@
-def trackContains(workingDirectory, uuid):
+def track_contains(workingDirectory, uuid):
     f = open(workingDirectory + "/data/trackedplayers.txt", "r")
     data = f.readlines()
     for i in data:
@@ -7,13 +7,13 @@ def trackContains(workingDirectory, uuid):
     return False
 
 
-def trackAdd(workingDirectory, uuid):
+def track_add(workingDirectory, uuid):
     f = open(workingDirectory + "/data/trackedplayers.txt", "a")
     f.write(uuid + "\n")
     return True
 
 
-def trackRemove(workingDirectory, uuid):
+def track_remove(workingDirectory, uuid):
     f = open(workingDirectory + "/data/trackedplayers.txt", "r")
     data = f.readlines()
     f.close()

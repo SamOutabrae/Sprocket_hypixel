@@ -18,11 +18,11 @@ class UHCStats():
   losses: int
   kills: int
   deaths: int
-  gamesPlayed: int
-  goldenApplesEaten: int
-  damageDealt: int
-  blocksPlaced: int
-  highestWinstreak: Optional[int]
+  games_played: int
+  golden_apples_eaten: int
+  damage_dealt: int
+  blocks_placed: int
+  highest_winstreak: Optional[int]
   winstreak: Optional[int]
   bow_hits: int
   bow_shots: int
@@ -35,7 +35,7 @@ class UHCStats():
     try:
       stats    = json_data["player"]["stats"]["Duels"]
       username = json_data["player"]["displayname"]
-      wins= stats.get("uhc_duel_wins", 0)
+      wins     = stats.get("uhc_duel_wins", 0)
 
       return cls(
         username          = username,
@@ -49,7 +49,7 @@ class UHCStats():
         goldenApplesEaten = stats.get("uhc_duel_golden_apples_eaten", 0),
         damageDealt       = stats.get("uhc_duel_damage_dealt", 0),
         blocksPlaced      = stats.get("uhc_duel_blocks_placed", 0),
-        highestWinstreak  = stats.get("best_uhc_winstreak", "This player has their winstreak hidden."),
+        highest_winstreak = stats.get("best_uhc_winstreak", "This player has their winstreak hidden."),
         winstreak         = stats.get("current_uhc_winstreak", "Thjis player has their winstreak hidden."),
         bow_hits          = stats.get("uhc_duel_bow_hits", 0),
         bow_shots         = stats.get("uhc_duel_bow_shots", 0)
@@ -59,36 +59,36 @@ class UHCStats():
       return None
 
   def __sub__(self, other):
-    wins              = self.wins - other.wins
-    losses            = self.losses - other.losses
-    kills             = self.kills - other.kills
-    deaths            = self.deaths - other.deaths
-    gamesPlayed       = self.gamesPlayed - other.gamesPlayed
-    goldenApplesEaten = self.goldenApplesEaten - other.goldenApplesEaten
-    damageDealt       = self.damageDealt - other.damageDealt
-    blocksPlaced      = self.blocksPlaced - other.blocksPlaced
-    bow_hits          = self.bow_hits - other.bow_hits
-    bow_shots         = self.bow_shots - other.bow_shots
+    wins                = self.wins - other.wins
+    losses              = self.losses - other.losses
+    kills               = self.kills - other.kills
+    deaths              = self.deaths - other.deaths
+    games_played        = self.games_played - other.games_played
+    golden_apples_eaten = self.golden_apples_eaten - other.golden_apples_eaten
+    damage_dealt        = self.damage_dealt - other.damage_dealt
+    blocks_placed       = self.blocks_placed - other.blocks_placed
+    bow_hits            = self.bow_hits - other.bow_hits
+    bow_shots           = self.bow_shots - other.bow_shots
 
     return UHCStats(
-      username          = self.username,
-      winstreak         = self.winstreak,
-      highestWinstreak  = self.highestWinstreak,
-      wins              = wins,
-      prestige          = get_prestige(self.wins),
-      next_prestige     = wins_to_prestige(self.wins),
-      losses            = losses,
-      kills             = kills,
-      deaths            = deaths,
-      gamesPlayed       = gamesPlayed,
-      goldenApplesEaten = goldenApplesEaten,
-      damageDealt       = damageDealt,
-      blocksPlaced      = blocksPlaced,
-      bow_hits          = bow_hits,
-      bow_shots         = bow_shots
+      username            = self.username,
+      winstreak           = self.winstreak,
+      highest_winstreak   = self.highest_winstreak,
+      wins                = wins,
+      prestige            = get_prestige(self.wins),
+      next_prestige       = wins_to_prestige(self.wins),
+      losses              = losses,
+      kills               = kills,
+      deaths              = deaths,
+      games_played        = games_played,
+      golden_apples_eaten = golden_apples_eaten,
+      damage_dealt        = damage_dealt,
+      blocks_placed       = blocks_placed,
+      bow_hits            = bow_hits,
+      bow_shots           = bow_shots
     )
 
-  def toEmbed(self, color=discord.Color.teal()):
+  def to_embed(self, color=discord.Color.teal()):
     embed = discord.Embed(title=f"UHC stats for {self.username}", color=color)
 
     next_prestige, wins_needed = self.next_prestige
@@ -96,18 +96,18 @@ class UHCStats():
     fields = {
       "Prestige"           : self.prestige,
       "Next Prestige"      : f"{wins_needed} more wins for {next_prestige}",
-      "Highest Winstreak"  : self.highestWinstreak,
+      "Highest Winstreak"  : self.highest_winstreak,
       "Current Winstreak"  : self.winstreak,
-      "Games Played"       : self.gamesPlayed,
+      "Games Played"       : self.games_played,
       "Wins"               : self.wins,
       "Losses"             : self.losses,
       "Win Percentage"     : f"{round(self.wins * 100 / (self.wins + self.losses))}%" if self.wins + self.losses != 0 else 0,
       "Kills"              : self.kills,
       "Deaths"             : self.deaths,
       "Bow Accuracy"       : f"{round((self.bow_hits / (self.bow_shots + self.bow_hits)) * 100, 2)}%" if self.bow_shots + self.bow_hits != 0 else 0,
-      "Golden Apples Eaten": self.goldenApplesEaten,
-      "Damage Dealt"       : self.damageDealt,
-      "Blocks Placed"      : self.blocksPlaced
+      "Golden Apples Eaten": self.golden_apples_eaten,
+      "Damage Dealt"       : self.damage_dealt,
+      "Blocks Placed"      : self.blocks_placed
     }
 
     for field in fields:
@@ -115,7 +115,7 @@ class UHCStats():
 
     return embed   
   
-  def toDateEmbed(self, date, color=discord.Color.teal()):
+  def to_date_embed(self, date, color=discord.Color.teal()):
     embed = discord.Embed(title=f"{self.username}'s uhc duels stats on {date.strftime('%m/%d/%y')}", color=color)
 
     next_prestige, wins_needed = self.next_prestige
@@ -123,17 +123,17 @@ class UHCStats():
     fields = {
       "Prestige"           : self.prestige,
       "Next Prestige"      : f"{wins_needed} more wins for {next_prestige}",
-      "Highest Winstreak"  : self.highestWinstreak,
-      "Games Played"       : self.gamesPlayed,
+      "Highest Winstreak"  : self.highest_winstreak,
+      "Games Played"       : self.games_played,
       "Wins"               : self.wins,
       "Losses"             : self.losses,
       "Win Percentage"     : f"{round(self.wins * 100 / (self.wins + self.losses))}%" if self.wins + self.losses != 0 else 0,
       "Kills"              : self.kills,
       "Deaths"             : self.deaths,
       "Bow Accuracy"       : f"{round((self.bow_hits / (self.bow_shots + self.bow_hits)) * 100, 1)}%" if self.wins + self.losses != 0 else 0,
-      "Golden Apples Eaten": self.goldenApplesEaten,
-      "Damage Dealt"       : self.damageDealt,
-      "Blocks Placed"      : self.blocksPlaced
+      "Golden Apples Eaten": self.golden_apples_eaten,
+      "Damage Dealt"       : self.damage_dealt,
+      "Blocks Placed"      : self.blocks_placed
     }
 
     for field in fields:
@@ -142,22 +142,22 @@ class UHCStats():
     return embed   
   
     
-  def toDateRangeEmbed(self, start_date, end_date, color=discord.Color.teal()):
+  def to_date_range_embed(self, start_date, end_date, color=discord.Color.teal()):
     start_date_formatted = start_date.strftime("%m/%d/%y")
     end_date_formatted = end_date.strftime("%m/%d/%y")
 
     embed = discord.Embed(title=f"{self.username}'s uhc duels progress between {start_date_formatted} and {end_date_formatted}", color=color)
 
     fields = {
-      "Games Played"       : self.gamesPlayed,
+      "Games Played"       : self.games_played,
       "Win Rate"           : f"{round((self.wins*100)/(self.wins+self.losses))}%" if self.wins + self.losses != 0 else "N/A",
       "Wins"               : self.wins,
       "Losses"             : self.losses,
       "Kills"              : self.kills,
       "Deaths"             : self.deaths,
-      "Golden Apples Eaten": self.goldenApplesEaten,
-      "Damage Dealt"       : self.damageDealt,
-      "Blocks Placed"      : self.blocksPlaced
+      "Golden Apples Eaten": self.golden_apples_eaten,
+      "Damage Dealt"       : self.damage_dealt,
+      "Blocks Placed"      : self.blocks_placed
     }
 
     for field in fields:
@@ -167,9 +167,9 @@ class UHCStats():
     
 def today_stats(uuid):
   json = requests.get(f"https://api.hypixel.net/player?key={CONFIG.KEY}&uuid={uuid}").json()
-  return UHCStats.from_json(json).toEmbed()
+  return UHCStats.from_json(json).to_embed()
 
-def getUHCStatsEmbed(uuid: str, start_date: datetime.datetime | None, end_date: datetime.datetime | None):
+def get_UHC_stats_embed(uuid: str, start_date: datetime.datetime | None, end_date: datetime.datetime | None):
   if start_date is None:
     today_stats(uuid)
   
@@ -182,7 +182,7 @@ def getUHCStatsEmbed(uuid: str, start_date: datetime.datetime | None, end_date: 
     yesterday = UHCStats.from_json(getJSON(start_date - datetime.timedelta(days=1), uuid=uuid))
     stats = date - yesterday
   
-    return stats.toDateEmbed(start_date)
+    return stats.to_date_embed(start_date)
   
   #date range
   else:
@@ -194,4 +194,4 @@ def getUHCStatsEmbed(uuid: str, start_date: datetime.datetime | None, end_date: 
 
     stats: UHCStats = end_stats - start_stats
 
-    return stats.toDateRangeEmbed(start_date, end_date)
+    return stats.to_date_range_embed(start_date, end_date)

@@ -11,7 +11,7 @@ from .tracking import databases
 from .config import CONFIG, both_in, guild_in
 
 
-def selfArgument(func):
+def self_argument(func):
   @wraps(func)
   async def wrapped(self, ctx, *args, **kwargs):
     if kwargs["username"] is None:
@@ -27,7 +27,7 @@ async def fail_tracking_required(self, ctx, *args, **kwargs):
   await ctx.respond("Tracking must be enabled to use this command.")
   return
 
-def trackingRequired(func):
+def tracking_required(func):
   @wraps(func)
   async def wrapped(self, ctx, *args, **kwargs):
     if not getattr(CONFIG, "TRACKING_ENABLED", False):  # safer than direct access

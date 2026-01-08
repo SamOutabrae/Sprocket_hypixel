@@ -7,7 +7,7 @@ import toml
 
 from pathlib import Path
 
-def getKey(path):
+def get_key(path):
   with open(path + "/config.toml", "r") as f:
     data = toml.load(f)
     return data["api_key"].strip()
@@ -16,7 +16,7 @@ def getKey(path):
 def main():
   # Have to go up one directory becuase this is in tracking, not root
   PATH = str(Path(__file__).parents[1].absolute())
-  key = getKey(PATH)
+  key = get_key(PATH)
 
   players = None
   with open(PATH + "/data/trackedplayers.txt", "r") as f:

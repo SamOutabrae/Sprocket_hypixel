@@ -14,14 +14,14 @@ class BridgeStats():
   losses: int
   kills: int
   deaths: int
-  gamesPlayed: int
+  games_played: int
   goals: int
-  blocksPlaced: int
-  highestWinstreak: Union[int, str]
+  blocks_placed: int
+  highest_winstreak: Union[int, str]
   winstreak: Union[int, str]
   prestige: str
-  nextPrestige: str
-  winsToPrestige: int
+  next_prestige: str
+  wins_to_prestige: int
 
   @classmethod
   def from_json(cls, json: dict):
@@ -69,7 +69,7 @@ class BridgeStats():
         player_stats.get("bridge_3v3v3v3_goals", 0)
       )
 
-      blocksPlaced = (
+      blocks_placed = (
         player_stats.get("bridge_duel_blocks_placed", 0) +
         player_stats.get("bridge_doubles_blocks_placed", 0) +
         player_stats.get("bridge_threes_blocks_placed", 0) +
@@ -77,9 +77,9 @@ class BridgeStats():
         player_stats.get("bridge_3v3v3v3_blocks_placed", 0)
       )
 
-      gamesPlayed = wins + losses
+      games_played = wins + losses
 
-      highestWinstreak = player_stats.get("best_bridge_winstreak", "This player has their winstreak hidden")
+      highest_winstreak = player_stats.get("best_bridge_winstreak", "This player has their winstreak hidden")
       winstreak = player_stats.get("current_bridge_winstreak", "This player has their winstreak hidden")
 
       prestige = get_prestige_halved(wins)
@@ -91,14 +91,14 @@ class BridgeStats():
         losses=losses,
         kills=kills,
         deaths=deaths,
-        gamesPlayed=gamesPlayed,
+        games_played=games_played,
         goals=goals,
-        blocksPlaced=blocksPlaced,
-        highestWinstreak=highestWinstreak,
+        blocks_placed=blocks_placed,
+        highest_winstreak=highest_winstreak,
         winstreak=winstreak,
         prestige=prestige,
-        nextPrestige=next_prestige,
-        winsToPrestige=wins_needed
+        next_prestige=next_prestige,
+        wins_to_prestige=wins_needed
       )
 
     except KeyError:
@@ -110,8 +110,8 @@ class BridgeStats():
       kills = self.kills + other.kills
       deaths = self.deaths + other.deaths
       goals = self.goals + other.goals
-      blocksPlaced = self.blocksPlaced + other.blocksPlaced
-      gamesPlayed = wins + losses
+      blocks_placed = self.blocks_placed + other.blocks_placed
+      games_played = wins + losses
 
       prestige = get_prestige_halved(wins)
       next_prestige, wins_needed = wins_to_prestige_halved(wins)
@@ -122,14 +122,14 @@ class BridgeStats():
           losses=losses,
           kills=kills,
           deaths=deaths,
-          gamesPlayed=gamesPlayed,
+          games_played=games_played,
           goals=goals,
-          blocksPlaced=blocksPlaced,
-          highestWinstreak=self.highestWinstreak,
+          blocks_placed=blocks_placed,
+          highest_winstreak=self.highest_winstreak,
           winstreak=self.winstreak,
           prestige=prestige,
-          nextPrestige=next_prestige,
-          winsToPrestige=wins_needed
+          next_prestige=next_prestige,
+          wins_to_prestige=wins_needed
       )
   
   def __sub__(self, other):
@@ -138,8 +138,8 @@ class BridgeStats():
     kills = self.kills - other.kills
     deaths = self.deaths - other.deaths
     goals = self.goals - other.goals
-    blocksPlaced = self.blocksPlaced - other.blocksPlaced
-    gamesPlayed = wins + losses
+    blocks_placed = self.blocks_placed - other.blocks_placed
+    games_played = wins + losses
 
     prestige = get_prestige_halved(self.wins)
     next_prestige, wins_needed = wins_to_prestige_halved(max(self.wins, other.wins))
@@ -150,14 +150,14 @@ class BridgeStats():
         losses=losses,
         kills=kills,
         deaths=deaths,
-        gamesPlayed=gamesPlayed,
+        games_played=games_played,
         goals=goals,
-        blocksPlaced=blocksPlaced,
-        highestWinstreak=self.highestWinstreak,
+        blocks_placed=blocks_placed,
+        highest_winstreak=self.highest_winstreak,
         winstreak=self.winstreak,
         prestige=prestige,
-        nextPrestige=next_prestige,
-        winsToPrestige=wins_needed
+        next_prestige=next_prestige,
+        wins_to_prestige=wins_needed
     )
   
   def toEmbed(self, color=discord.Color.teal()):
@@ -165,17 +165,17 @@ class BridgeStats():
 
     fields = {
     "Prestige": self.prestige,
-    "Next Prestige": f"{self.winsToPrestige} more wins for {self.nextPrestige}",
-    "Highest Winstreak": self.highestWinstreak,
+    "Next Prestige": f"{self.wins_to_prestige} more wins for {self.next_prestige}",
+    "Highest Winstreak": self.highest_winstreak,
     "Current Winstreak": self.winstreak,
-    "Games Played": self.gamesPlayed,
+    "Games Played": self.games_played,
     "Win Rate": f"{round((self.wins*100)/(self.wins+self.losses))}%",
     "Wins": self.wins,
     "Losses": self.losses,
     "Kills": self.kills,
     "Deaths": self.deaths,
     "Goals": self.goals,
-    "Blocks Placed": self.blocksPlaced
+    "Blocks Placed": self.blocks_placed
     }
 
     for field in fields:
@@ -189,16 +189,16 @@ class BridgeStats():
 
     fields = {
     "Prestige": self.prestige,
-    "Highest Winstreak": self.highestWinstreak,
+    "Highest Winstreak": self.highest_winstreak,
     "Current Winstreak": self.winstreak,
-    "Games Played": self.gamesPlayed,
+    "Games Played": self.games_played,
     "Win Rate": f"{round((self.wins*100)/(self.wins+self.losses))}%" if self.wins + self.losses != 0 else 0,
     "Wins": self.wins,
     "Losses": self.losses,
     "Kills": self.kills,
     "Deaths": self.deaths,
     "Goals": self.goals,
-    "Blocks Placed": self.blocksPlaced
+    "Blocks Placed": self.blocks_placed
     }
 
     for field in fields:
@@ -220,7 +220,7 @@ class BridgeStats():
     "Kills": self.kills,
     "Deaths": self.deaths,
     "Goals": self.goals,
-    "Blocks Placed": self.blocksPlaced
+    "Blocks Placed": self.blocks_placed
     }
 
     for field in fields:
@@ -232,7 +232,7 @@ def today_stats(uuid):
   json = requests.get(f"https://api.hypixel.net/player?key={CONFIG.KEY}&uuid={uuid}").json()
   return BridgeStats.from_json(json).toEmbed()
 
-def getBridgeStatsEmbed(uuid, start_date, end_date):
+def get_bridge_stats_embed(uuid, start_date, end_date):
   if start_date is None:
     return today_stats(uuid)
   elif end_date is None:
