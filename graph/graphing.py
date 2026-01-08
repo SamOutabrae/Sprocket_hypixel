@@ -17,6 +17,12 @@ def process_df(df: pd.DataFrame, days: int=0, n: int=0, since_start: bool=True) 
     df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y", dayfirst=True)
     df = df.sort_values("Date")
 
+    check_cols = df.select_dtypes(include=['number']).columns.tolist()
+    is_duplicate = (df[check_cols] == df[check_cols].shift()).all(axis=1)
+    
+    # Keep rows that are NOT duplicates
+    df = df[~is_duplicate]
+
     if n > 0:
         df = df.tail(n)
     if days > 0:
