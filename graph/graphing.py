@@ -11,6 +11,8 @@ import os
 # Turn interactive mode off so we don't show plots
 plt.ioff()
 
+# TODO as a n parameter so you can see only recent data
+
 bw_variables = {
   "Date": ["date", "time"],
   "Kills": ["kills"],
@@ -45,11 +47,11 @@ def get_bw_axis(df, label):
 def bad_bw_labels_embed() -> discord.Embed:
   embed = discord.Embed(title="Invalid Axis Names", description="Valid axis names include the following. Aliases are provided below.", color=discord.colour.Color.blue())
   for key in bw_variables:
-    embed.add_field(name=key, value=f"{", ".join(bw_variables[key])}", inline=False)
+    embed.add_field(name=key, value=f"{', '.join(bw_variables[key])}", inline=False)
 
   return embed
 
-async def graph_bw(ctx: Context, uuid: str, x_label: str, y_label):
+async def graph_bw(ctx: Context, uuid: str, x_label: str, y_label: str):
   df: pd.DataFrame = databases.databases[uuid]["bedwars"]
 
   df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y")
@@ -71,6 +73,73 @@ async def graph_bw(ctx: Context, uuid: str, x_label: str, y_label):
   fig.autofmt_xdate()
 
   ax.set_title(f"Bedwars Stats")
+  ax.set_ylabel(f"{y_label}")
+  ax.set_xlabel(f"{x_label}")
+
+  fig.savefig("tmp.jpeg")
+  await ctx.respond(file=discord.File("tmp.jpeg"))
+  os.remove("tmp.jpeg")
+  
+  plt.close(fig)
+
+
+
+
+bridge_variables = {
+  "Date": ["date", "time"],
+  "Kills": ["kills"],
+  "Deaths": ["deaths"], 
+  "Games Played": ["games played", "games"],
+  "Goals": ["goals"],
+  "Blocks Placed": ["blocks placed", "blocks"],
+  "Wins": ["wins"],
+  "Losses": ["losses"],
+  "Highest Winstreak": ["highest winstreak", "hws"],
+  "Win Rate": ["win rate", "winrate", "wr"]
+}
+
+def match_bridge_variable(var: str) -> str:
+  var = var.lower()
+
+  for key in bridge_variables:
+    if var in bridge_variables[key]:
+      return key
+
+def get_bridge_axis(df, label):
+  if label == "Win Rate":
+    return df["Wins"] / (df["Wins"] + df["Losses"])
+  else:
+    return df[label]
+  
+def bad_bridge_labels_embed() -> discord.Embed:
+  embed = discord.Embed(title="Invalid Axis Names", description="Valid axis names include the following. Aliases are provided below.", color=discord.colour.Color.blue())
+  for key in bridge_variables:
+    embed.add_field(name=key, value=f"{', '.join(bridge_variables[key])}", inline=False)
+
+  return embed
+
+async def graph_bridge(ctx: Context, duelmode: str, uuid: str, x_label: str, y_label: str):
+  df: pd.DataFrame = databases.databases[uuid]["bridge"]
+
+  df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y")
+  df = df.sort_values("Date")
+
+  y_label = match_bridge_variable(y_label)
+  x_label = match_bridge_variable(x_label)
+
+  if x_label is None or y_label is None:
+    await ctx.respond(embed=bad_bridge_labels_embed())
+    return
+  
+  x_axis = get_bridge_axis(df, x_label)
+  y_axis = get_bridge_axis(df, y_label)
+
+  fig, ax = plt.subplots()
+  ax.plot(x_axis, y_axis)
+
+  fig.autofmt_xdate()
+
+  ax.set_title(f"Bridge Stats")
   ax.set_ylabel(f"{y_label}")
   ax.set_xlabel(f"{x_label}")
 

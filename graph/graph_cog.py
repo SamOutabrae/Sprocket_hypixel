@@ -28,3 +28,30 @@ class Graph(commands.Cog):
     
     await graphing.graph_bw(ctx, username, x_axis, y_axis)
   
+  @commands.slash_command(name = "graph-duels")
+  @util.self_argument
+  @util.tracking_required
+  async def graph_duels(self, ctx,
+                        duelmode: discord.Option(str, description="The duels gamemode you want to graph."),
+                        y_axis: discord.Option(str, description="The desired y-axis variable."),
+                        x_axis: discord.Option(str, default="Games", description="The desired x-axis variable. Defaults to games if left blank."),
+                        username: discord.Option(str, required=False, description="The username of the player you're trying to see stats for")):
+    #await ctx.defer()
+
+    # TODO add UHC
+    gamemodes = {
+      'bridge': graphing.graph_bridge,
+    }
+
+    # TODO add nicer user interface
+    if not duelmode.lower() in gamemodes:
+      await ctx.respond("You must provide a valid gamemode.")
+      return
+    func = gamemodes[duelmode.lower()]
+
+    uuid = util.getUUID(username)
+    if uuid is None:
+      await ctx.respond("You must provide a valid username.")
+      return
+    
+    await func(ctx, duelmode, uuid, x_axis, y_axis)
