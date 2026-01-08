@@ -12,6 +12,7 @@ from .config import CONFIG, both_in, guild_in
 
 
 def self_argument(func):
+  """Decorator which allows a the username parameter for a command to be blank if the discord user has a mapped account."""
   @wraps(func)
   async def wrapped(self, ctx, *args, **kwargs):
     if kwargs["username"] is None:

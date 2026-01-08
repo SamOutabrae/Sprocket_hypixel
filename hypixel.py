@@ -50,13 +50,15 @@ def get_intents() -> discord.Intents:
 def get_cogs(client: commands.Bot, dir: str) -> list:
   from .gamemodes.bedwars import Bedwars
   from .gamemodes.duels import Duels
+  from .graph.graph_cog import Graph
   from .util import Util
   initialize_config(dir)
 
   return [
     Bedwars(client),
     Util(dir),
-    Duels()
+    Duels(),
+    Graph()
   ]
 
 def api_token(directory: str) -> str:
