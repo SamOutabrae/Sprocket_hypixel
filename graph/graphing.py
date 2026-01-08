@@ -6,11 +6,38 @@ from ..tracking import databases
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import datetime
+
 import os
 
 # Turn interactive mode off so we don't show plots
 plt.ioff()
 
+def process_df(df: pd.DataFrame, days: int=0, n: int=0, since_start: bool=True) -> pd.DataFrame:
+    df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y", dayfirst=True)
+    df = df.sort_values("Date")
+
+    if n > 0:
+        df = df.tail(n)
+    if days > 0:
+        latest = df['Date'].max()
+        df = df[df['Date'] >= (latest - datetime.timedelta(days=days))]
+
+    if df.empty:
+        return df
+
+    if since_start:
+        # Identify columns that should NOT be zeroed
+        # Level is cumulative, but people usually want to see absolute level (e.g., 150 -> 151)
+        # Winstreaks are current states, not cumulative totals.
+        ignore_cols = ["Date", "Bedwars Level", "Winstreak", "Highest Winstreak"]
+        
+        cols_to_zero = df.select_dtypes(include=['number']).columns
+        cols_to_zero = [c for c in cols_to_zero if c not in ignore_cols and "Ratio" not in c and "Rate" not in c]
+
+        df[cols_to_zero] = df[cols_to_zero].subtract(df[cols_to_zero].iloc[0])
+
+    return df
 # TODO as a n parameter so you can see only recent data
 
 bw_variables = {
@@ -51,12 +78,10 @@ def bad_bw_labels_embed() -> discord.Embed:
 
   return embed
 
-async def graph_bw(ctx: Context, uuid: str, x_label: str, y_label: str):
+async def graph_bw(ctx: Context, uuid: str, x_label: str, y_label: str, days: int, n: int):
   df: pd.DataFrame = databases.databases[uuid]["bedwars"]
-
-  df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y")
-  df = df.sort_values("Date")
-
+  df = process_df(df, days, n)  
+  
   y_label = match_bedwars_variable(y_label)
   x_label = match_bedwars_variable(x_label)
 
@@ -118,11 +143,9 @@ def bad_bridge_labels_embed() -> discord.Embed:
 
   return embed
 
-async def graph_bridge(ctx: Context, duelmode: str, uuid: str, x_label: str, y_label: str):
+async def graph_bridge(ctx: Context, duelmode: str, uuid: str, x_label: str, y_label: str, days: int, n: int):
   df: pd.DataFrame = databases.databases[uuid]["bridge"]
-
-  df["Date"] = pd.to_datetime(df["Date"], format="%d-%m-%y")
-  df = df.sort_values("Date")
+  df = process_df(df, days, n)
 
   y_label = match_bridge_variable(y_label)
   x_label = match_bridge_variable(x_label)
